@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/server";
+import { InventoryCorrectionForm } from "./inventory-correction-form";
 
 type InventoryItem = {
   product_id: string;
@@ -146,29 +147,36 @@ export default async function InventoryProductPage({
       </section>
 
       <section className="mt-7 grid gap-5 lg:grid-cols-[0.75fr_1.25fr]">
-        <div className="app-card p-5">
-          <h2 className="font-semibold">Stock rules</h2>
-          <div className="mt-5 space-y-4">
-            <InfoRow
-              icon={Package}
-              label="Units per box"
-              value={String(item.units_per_box)}
-            />
-            <InfoRow
-              icon={TrendingDown}
-              label="Low stock threshold"
-              value={String(item.low_stock_threshold)}
-            />
-            <InfoRow
-              icon={TrendingUp}
-              label="Stock position"
-              value={
-                item.is_low_stock
-                  ? "Needs replenishment"
-                  : "Healthy"
-              }
-            />
+        <div className="space-y-5">
+          <div className="app-card p-5">
+            <h2 className="font-semibold">Stock rules</h2>
+            <div className="mt-5 space-y-4">
+              <InfoRow
+                icon={Package}
+                label="Units per box"
+                value={String(item.units_per_box)}
+              />
+              <InfoRow
+                icon={TrendingDown}
+                label="Low stock threshold"
+                value={String(item.low_stock_threshold)}
+              />
+              <InfoRow
+                icon={TrendingUp}
+                label="Stock position"
+                value={
+                  item.is_low_stock
+                    ? "Needs replenishment"
+                    : "Healthy"
+                }
+              />
+            </div>
           </div>
+
+          <InventoryCorrectionForm
+            productId={item.product_id}
+            currentQuantity={item.current_quantity}
+          />
         </div>
 
         <div className="app-card p-5">
