@@ -198,15 +198,26 @@ export function NewConsignment({
                       </div>
 
                       <div className="mt-4 max-w-56">
-                        <Stepper
-                          label="Units to give"
-                          value={units}
-                          min={0}
-                          max={product.current_quantity}
-                          onChange={(value) =>
-                            update(product, unitWithinStock(value))
-                          }
-                        />
+                        {product.units_per_box > 1 ? (
+                          <BoxLooseStepper
+                            unitsPerBox={product.units_per_box}
+                            value={units}
+                            max={product.current_quantity}
+                            onChange={(value) =>
+                              update(product, unitWithinStock(value))
+                            }
+                          />
+                        ) : (
+                          <Stepper
+                            label="Units to give"
+                            value={units}
+                            min={0}
+                            max={product.current_quantity}
+                            onChange={(value) =>
+                              update(product, unitWithinStock(value))
+                            }
+                          />
+                        )}
                       </div>
                     </div>
                   );
@@ -330,6 +341,132 @@ function Field({
         />
       </div>
     </label>
+  );
+}
+
+function BoxLooseStepper({
+  unitsPerBox,
+  value,
+  max,
+  onChange,
+}: {
+  unitsPerBox: number;
+  value: number;
+  max: number;
+  onChange: (value: number) => void;
+}) {
+  const boxes = Math.floor(value / unitsPerBox);
+  const loose = value % unitsPerBox;
+
+  function updateBoxes(nextBoxes: number) {
+    const safe = Math.max(0, Math.min(nextBoxes, Math.floor(max / unitsPerBox)));
+    onChange(safe * unitsPerBox + loose);
+  }
+
+  function updateLoose(nextLoose: number) {
+    const safe = Math.max(0, Math.min(nextLoose, unitsPerBox - 1));
+    const requested = boxes * unitsPerBox + safe;
+    onChange(Math.min(requested, max));
+  }
+
+  return (
+    <div className="space-y-2">
+      <div className="rounded-xl border bg-blue-50/40 p-2.5">
+        <div className="flex items-center justify-between px-0.5">
+          <span className="text-[10px] font-medium text-muted-foreground">
+            Boxes
+          </span>
+          <span className="text-[9px] text-muted-foreground">
+            {unitsPerBox.toLocaleString("en-GH")} each
+          </span>
+        </div>
+
+        <div className="mt-2 flex items-center">
+          <button
+            type="button"
+            disabled={boxes <= 0}
+            onClick={() => updateBoxes(boxes - 1)}
+            aria-label={`Decrease boxes for `}
+            className="flex size-8 shrink-0 items-center justify-center rounded-lg border bg-white transition hover:bg-blue-50 disabled:opacity-30"
+          >
+            <Minus className="size-3.5" />
+          </button>
+
+          <input
+            type="number"
+            min="0"
+            max={Math.floor(max / unitsPerBox)}
+            step="1"
+            value={boxes}
+            onChange={(event) =>
+              updateBoxes(
+                Number.parseInt(event.target.value || "0", 10) || 0
+              )
+            }
+            className="min-w-0 flex-1 bg-transparent text-center text-lg font-semibold tabular-nums outline-none"
+            aria-label="Boxes"
+          />
+
+          <button
+            type="button"
+            disabled={boxes >= Math.floor(max / unitsPerBox)}
+            onClick={() => updateBoxes(boxes + 1)}
+            aria-label="Increase boxes"
+            className="flex size-8 shrink-0 items-center justify-center rounded-lg border bg-white transition hover:bg-blue-50 disabled:opacity-30"
+          >
+            <Plus className="size-3.5" />
+          </button>
+        </div>
+      </div>
+
+      <div className="rounded-xl border bg-blue-50/40 p-2.5">
+        <div className="flex items-center justify-between px-0.5">
+          <span className="text-[10px] font-medium text-muted-foreground">
+            Loose
+          </span>
+          <span className="text-[9px] text-muted-foreground">
+            individual units
+          </span>
+        </div>
+
+        <div className="mt-2 flex items-center">
+          <button
+            type="button"
+            disabled={loose <= 0}
+            onClick={() => updateLoose(loose - 1)}
+            aria-label="Decrease loose units"
+            className="flex size-8 shrink-0 items-center justify-center rounded-lg border bg-white transition hover:bg-blue-50 disabled:opacity-30"
+          >
+            <Minus className="size-3.5" />
+          </button>
+
+          <input
+            type="number"
+            min="0"
+            max={unitsPerBox - 1}
+            step="1"
+            value={loose}
+            onChange={(event) =>
+              updateLoose(
+                Number.parseInt(event.target.value || "0", 10) || 0
+              )
+            }
+            className="min-w-0 flex-1 bg-transparent text-center text-lg font-semibold tabular-nums outline-none"
+            aria-label="Loose units"
+          />
+
+          <button
+            type="button"
+            disabled={loose >= unitsPerBox - 1}
+            onClick={() => updateLoose(loose + 1)}
+            aria-label="Increase loose units"
+            className="flex size-8 shrink-0 items-center justify-center rounded-lg border bg-white transition hover:bg-blue-50 disabled:opacity-30"
+          >
+            <Plus className="size-3.5" />
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 

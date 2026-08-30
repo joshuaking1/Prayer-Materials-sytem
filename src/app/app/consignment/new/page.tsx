@@ -11,6 +11,7 @@ export type ConsignmentProduct = {
   category: string | null;
   current_quantity: number;
   units_per_box: number;
+  selling_price: number;
 };
 
 export default async function NewConsignmentPage() {

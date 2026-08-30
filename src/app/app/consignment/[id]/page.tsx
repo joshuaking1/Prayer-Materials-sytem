@@ -10,6 +10,14 @@ import {
 import { createClient } from "@/lib/supabase/server";
 import { SettleConsignmentForm } from "./settle-consignment-form";
 
+function money(value: number) {
+  return new Intl.NumberFormat("en-GH", {
+    style: "currency",
+    currency: "GHS",
+    minimumFractionDigits: 2,
+  }).format(value);
+}
+
 type ConsignmentDetail = {
   id: string;
   issue_number: string;
@@ -31,6 +39,7 @@ type ConsignmentDetail = {
     units_issued: number;
     units_sold: number;
     units_returned: number;
+    selling_price_snapshot: number;
     products: {
       name: string;
       sku: string | null;
@@ -70,6 +79,7 @@ export default async function ConsignmentDetailPage({
         units_issued,
         units_sold,
         units_returned,
+        selling_price_snapshot,
         products (
           name,
           sku
@@ -101,6 +111,12 @@ export default async function ConsignmentDetailPage({
 
   const totalReturned = items.reduce(
     (total, item) => total + Number(item.units_returned),
+    0
+  );
+
+  const amountOwed = items.reduce(
+    (total, item) =>
+      total + Number(item.units_sold) * Number(item.selling_price_snapshot),
     0
   );
 
@@ -143,7 +159,7 @@ export default async function ConsignmentDetailPage({
         </p>
       </div>
 
-      <section className="mt-7 grid gap-3 sm:grid-cols-3">
+      <section className="mt-7 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Metric label="Units given out" value={totalIssued.toLocaleString("en-GH")} />
         <Metric label="Reported sold" value={totalSold.toLocaleString("en-GH")} />
         <Metric
@@ -151,6 +167,7 @@ export default async function ConsignmentDetailPage({
           value={totalReturned.toLocaleString("en-GH")}
           highlight
         />
+        <Metric label="Amount to give us" value={money(amountOwed)} />
       </section>
 
       <section className="mt-7 app-card p-5">
@@ -173,38 +190,61 @@ export default async function ConsignmentDetailPage({
           </p>
         ) : (
           <div className="divide-y">
-            {items.map((item) => (
-              <div key={item.id} className="flex items-center justify-between gap-4 py-4 first:pt-0 last:pb-0">
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium">
-                    {item.products?.name ?? "Unknown material"}
-                  </p>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    {item.units_issued.toLocaleString("en-GH")} given out
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-4 text-right">
-                  <div>
-                    <p className="text-[10px] uppercase tracking-[0.08em] text-muted-foreground">
-                      Sold
+            {items.map((item) => {
+              const itemSold = Number(item.units_sold);
+              const itemPrice = Number(item.selling_price_snapshot);
+              const itemAmount = itemSold * itemPrice;
+              return (
+                <div key={item.id} className="flex items-center justify-between gap-4 py-4 first:pt-0 last:pb-0">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium">
+                      {item.products?.name ?? "Unknown material"}
                     </p>
-                    <p className="mt-1 text-sm font-semibold tabular-nums">
-                      {item.units_sold.toLocaleString("en-GH")}
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {item.units_issued.toLocaleString("en-GH")} given out
                     </p>
                   </div>
 
-                  <div>
-                    <p className="text-[10px] uppercase tracking-[0.08em] text-muted-foreground">
-                      Returned
-                    </p>
-                    <p className="mt-1 text-sm font-semibold tabular-nums text-[#2f8f5b]">
-                      {item.units_returned.toLocaleString("en-GH")}
-                    </p>
+                  <div className="flex items-center gap-4 text-right">
+                    <div>
+                      <p className="text-[10px] uppercase tracking-[0.08em] text-muted-foreground">
+                        Price / unit
+                      </p>
+                      <p className="mt-1 text-xs font-medium tabular-nums">
+                        {money(itemPrice)}
+                      </p>
+                    </div>
+
+                    <div>
+                      <p className="text-[10px] uppercase tracking-[0.08em] text-muted-foreground">
+                        Sold
+                      </p>
+                      <p className="mt-1 text-sm font-semibold tabular-nums">
+                        {itemSold.toLocaleString("en-GH")}
+                      </p>
+                    </div>
+
+                    <div>
+                      <p className="text-[10px] uppercase tracking-[0.08em] text-muted-foreground">
+                        Returned
+                      </p>
+                      <p className="mt-1 text-sm font-semibold tabular-nums text-[#2f8f5b]">
+                        {item.units_returned.toLocaleString("en-GH")}
+                      </p>
+                    </div>
+
+                    <div>
+                      <p className="text-[10px] uppercase tracking-[0.08em] text-muted-foreground">
+                        Amount due
+                      </p>
+                      <p className="mt-1 text-sm font-semibold tabular-nums">
+                        {money(itemAmount)}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 

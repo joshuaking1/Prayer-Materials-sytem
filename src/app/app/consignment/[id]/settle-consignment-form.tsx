@@ -16,6 +16,14 @@ import {
   type ConsignmentState,
 } from "../actions";
 
+function money(value: number) {
+  return new Intl.NumberFormat("en-GH", {
+    style: "currency",
+    currency: "GHS",
+    minimumFractionDigits: 2,
+  }).format(value);
+}
+
 type SettleItem = {
   id: string;
   product_id: string;
@@ -23,6 +31,7 @@ type SettleItem = {
   units_issued: number;
   units_sold: number;
   units_returned: number;
+  selling_price_snapshot: number;
   products: {
     name: string;
     sku: string | null;
@@ -94,6 +103,11 @@ export function SettleConsignmentForm({
 
   const totalReturned = items.reduce((total, item) => {
     return total + (settlement[item.product_id]?.units_returned ?? 0);
+  }, 0);
+
+  const totalOwed = items.reduce((total, item) => {
+    const sold = settlement[item.product_id]?.units_sold ?? 0;
+    return total + sold * Number(item.selling_price_snapshot);
   }, 0);
 
   const hasProblem = items.some((item) => {
@@ -171,7 +185,7 @@ export function SettleConsignmentForm({
                     {item.products?.name ?? "Unknown material"}
                   </p>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    {item.units_issued.toLocaleString("en-GH")} units given out
+                    {item.units_issued.toLocaleString("en-GH")} units given out · {money(item.selling_price_snapshot)} each
                   </p>
                 </div>
 
@@ -207,6 +221,15 @@ export function SettleConsignmentForm({
                   }
                 />
               </div>
+
+              <div className="mt-3 flex items-center justify-between text-xs">
+                <span className="text-muted-foreground">
+                  Owed for this item:{" "}
+                  <span className="font-semibold tabular-nums">
+                    {money(item.selling_price_snapshot * value.units_sold)}
+                  </span>
+                </span>
+              </div>
             </div>
           );
         })}
@@ -231,6 +254,15 @@ export function SettleConsignmentForm({
               {totalReturned.toLocaleString("en-GH")}
             </p>
           </div>
+        </div>
+
+        <div className="text-right">
+          <p className="text-[10px] uppercase tracking-[0.08em] text-muted-foreground">
+            Amount to give us
+          </p>
+          <p className="mt-1 text-xl font-bold tabular-nums">
+            {money(totalOwed)}
+          </p>
         </div>
 
         <label className="block min-w-52 text-xs font-medium">
