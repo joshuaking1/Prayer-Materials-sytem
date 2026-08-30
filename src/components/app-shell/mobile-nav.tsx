@@ -10,6 +10,7 @@ import {
   FileClock,
   Home,
   LayoutDashboard,
+  LogOut,
   Menu,
   PackageCheck,
   ReceiptText,
@@ -22,6 +23,7 @@ import {
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { logoutAction } from "@/app/logout/actions";
 
 const quickItems = [
   {
@@ -262,6 +264,18 @@ function MobileMenu({
               onClose={onClose}
             />
           ) : null}
+
+          <div className="mt-4 border-t border-blue-100 pt-4">
+            <form action={logoutAction}>
+              <button
+                type="submit"
+                className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-medium text-slate-600 transition hover:bg-red-50 hover:text-red-600"
+              >
+                <LogOut className="size-[17px]" />
+                Sign out
+              </button>
+            </form>
+          </div>
         </div>
       </div>
     </div>

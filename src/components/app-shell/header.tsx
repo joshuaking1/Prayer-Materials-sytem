@@ -2,10 +2,12 @@ import {
   Bell,
   Building2,
   ChevronDown,
+  LogOut,
   Search,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { logoutAction } from "@/app/logout/actions";
 
 type HeaderProps = {
   displayName: string;
@@ -66,7 +68,7 @@ export function Header({
           <span className="sr-only">Notifications</span>
         </Button>
 
-        <div className="ml-1 flex items-center gap-2 rounded-xl py-1 pl-1 pr-2">
+<div className="ml-1 flex items-center gap-2 rounded-xl py-1 pl-1 pr-2">
           <div className="flex size-9 items-center justify-center rounded-full bg-blue-600 text-[11px] font-semibold text-white shadow-sm shadow-blue-700/20">
             {initials}
           </div>
@@ -74,6 +76,16 @@ export function Header({
           <span className="hidden max-w-32 truncate text-xs font-medium sm:block">
             {displayName}
           </span>
+
+          <form action={logoutAction}>
+            <button
+              type="submit"
+              className="ml-1 flex size-8 items-center justify-center rounded-lg text-muted-foreground transition hover:bg-red-50 hover:text-red-600"
+              title="Sign out"
+            >
+              <LogOut className="size-4" />
+            </button>
+          </form>
         </div>
       </div>
     </header>

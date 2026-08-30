@@ -9,6 +9,7 @@ import {
   FileClock,
   HandCoins,
   LayoutDashboard,
+  LogOut,
   PackageCheck,
   ReceiptText,
   Settings,
@@ -19,6 +20,7 @@ import {
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { logoutAction } from "@/app/logout/actions";
 
 const operations = [
   {
@@ -136,7 +138,7 @@ export function Sidebar({ role }: SidebarProps) {
         ) : null}
       </div>
 
-      <div className="shrink-0 border-t border-blue-100 p-3">
+<div className="shrink-0 border-t border-blue-100 p-3">
         <div className="flex items-center gap-2 rounded-2xl bg-blue-50 px-3 py-2.5 ring-1 ring-blue-100">
           <ShieldCheck className="size-4 text-blue-700" />
           <div>
@@ -148,6 +150,16 @@ export function Sidebar({ role }: SidebarProps) {
             </p>
           </div>
         </div>
+
+        <form action={logoutAction}>
+          <button
+            type="submit"
+            className="mt-2 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-medium text-slate-600 transition hover:bg-red-50 hover:text-red-600"
+          >
+            <LogOut className="size-[17px]" />
+            Sign out
+          </button>
+        </form>
       </div>
     </aside>
   );
